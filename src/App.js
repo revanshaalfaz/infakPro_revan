@@ -270,7 +270,7 @@ const App = () => {
   };
 
   const sendNotification = async (body, title) => {
-    const token = "cPhpW07P9ciypF5_lIohAi:APA91bEhpxh8So2HzB8_K1dqyaZdn-awsNNDzhLdooByXXdDgi3X6MgSkvenw5QTp6Vh81zqg0VoOj53j0CkolStPXwcVw8MJJXN9m2LaoJmPVnlYFM-7sdA830JZ3I3uMWb0mhsX1n8";
+    const token = "cyVDT8zhWB0FY6sks1EwfG:APA91bHHchdf33-3ZRhtoGW2D8CKVg9QMzBytKWnQWov5cuwJceURMqQJV6guaGRb2Y67WKqQTNFWlqpYKXTR7tnEv5voZ9Fl5gtgRtymoXAsyz5ukwE37nLFxvCn5JXCBiXyTyZnmQ6";
 
     try {
       const url = `https://ikhlasapp.my.id/send-notification?token=${token}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
