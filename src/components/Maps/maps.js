@@ -7,16 +7,18 @@ import { onValue, ref } from "firebase/database";
 import axios from "axios"; // Pastikan axios sudah di-install
 
 function MapsReact() {
-  const [height, setHeight] = React.useState("calc(100vh - 100px)");
+  // const [height, setHeight] = React.useState("calc(100vh - 100px)");
   const [dataMap, setDataMap] = React.useState(null); // Inisialisasi sebagai null
+  const [hasSentNotification, setHasSentNotification] = React.useState(false);
   const starCountRef = ref(database, `maps/`);
 
-  // Koordinat pusat lingkaran (dalam hal ini adalah tempat marker awal)
-  const centerLat = -7.6865182;
-  const centerLng = 110.4205035;
+  // Koordinat pusat lingkaran (masjid Al-Ikhlas)
+  const centerLat = -7.81744;
+  const centerLng = 110.37876;
 
   // Radius lingkaran dalam meter
-  const radiusInMeters = 30;
+  // Radius masjid Al-Ikhlas Sorosutan 47 meter.
+  const radiusInMeters = 47;
 
   // Fungsi untuk menghitung jarak antara dua titik koordinat menggunakan rumus Haversine
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -36,23 +38,28 @@ function MapsReact() {
   // Fungsi untuk memeriksa apakah marker berada di luar radius dan kirim notifikasi
   const checkDistance = (latitude, longitude) => {
     const distance = calculateDistance(centerLat, centerLng, latitude, longitude);
-
-    // Tambahkan log untuk memeriksa jarak yang dihitung
     console.log(`Distance from center to marker: ${distance} meters`);
 
     if (distance > radiusInMeters) {
-      alert("Marker berada di luar radius 30 meter!");
-      // Kirim notifikasi ketika jarak lebih dari 30 meter
-      sendNotification("Marker berada di luar radius 30 meter", "Peringatan Jarak");
+      // Jika marker keluar dari radius dan notifikasi belum dikirim, kirim notifikasi dan ubah status
+      if (!hasSentNotification) {
+        sendNotification("Kotak Infak berada di luar Masjid!", "Peringatan Kotak Infak");
+        setHasSentNotification(true);
+      }
+    } else {
+      // Reset status pengiriman notifikasi jika marker kembali ke dalam radius
+      if (hasSentNotification) {
+        setHasSentNotification(false);
+      }
     }
   };
 
   // Fungsi untuk mengirim notifikasi
   const sendNotification = async (body, title) => {
-    const token = "cyVDT8zhWB0FY6sks1EwfG:APA91bHHchdf33-3ZRhtoGW2D8CKVg9QMzBytKWnQWov5cuwJceURMqQJV6guaGRb2Y67WKqQTNFWlqpYKXTR7tnEv5voZ9Fl5gtgRtymoXAsyz5ukwE37nLFxvCn5JXCBiXyTyZnmQ6";
+    const token = "c95WLjFp3hHDEcmDxClmAv:APA91bFdqxKJE3r7-9baoWIbomQ0qUvrVLlY8OiEiOY2xxwTjSuMwjcD_XPOpHUsy_bIr_-qFdL7s_fBG7LSKL3-OjNEByeyxj_8MUaHbMVSRYwpQfT7v9ARsvhbogneYb9OLNargTuZ";
 
     try {
-      const url = `https://ikhlasapp.my.id/send-notification?token=${token}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+      const url = `http://localhost:3001/send-notification?token=${token}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
       console.log("Sending notification with URL: ", url);
 
       const response = await axios.get(url);
@@ -75,6 +82,7 @@ function MapsReact() {
             const latitude = parseFloat(data.lat);
             const longitude = parseFloat(data.long);
 
+            //mengecek apakah koordinat benar sesuai dengan angka bukan NaN
             if (!isNaN(latitude) && !isNaN(longitude)) {
               setDataMap({ lat: latitude, long: longitude });
 
@@ -82,12 +90,12 @@ function MapsReact() {
               checkDistance(latitude, longitude);
             } else {
               console.error("Invalid data: latitude or longitude is NaN");
-              // Set to default center if invalid
+              // jika data tidak valid maka akan diset default ke koordniat pusat yang sudah ditentukan
               setDataMap({ lat: centerLat, long: centerLng });
             }
           } else {
             console.error("Invalid data from Firebase: lat or long is missing");
-            // Set to default center if data is missing
+            // Jika data tidak lengkap juga maka akan di set default
             setDataMap({ lat: centerLat, long: centerLng });
           }
         }
@@ -117,6 +125,7 @@ function MapsReact() {
           margin: "auto",
           height: "calc(100vh - 0px)",
         }}
+        //mengambil API dari maptiler
         mapStyle="https://api.maptiler.com/maps/streets/style.json?key=sVLnYoaj7y0PsT1a4jsL"
       >
         <NavigationControl position="top-left" />
@@ -126,7 +135,7 @@ function MapsReact() {
             longitude={dataMap.long}
             latitude={dataMap.lat}
             color="#000000"
-            draggable={true} // Marker bisa dipindahkan
+            // draggable={false} // Marker bisa dipindahkan
             onDragEnd={(event) => {
               const { lngLat } = event;
               checkDistance(lngLat.lat, lngLat.lng); // Cek jarak ketika marker dipindahkan
