@@ -100,7 +100,7 @@ const Login = () => {
         <div className="min-h-screen w-full bg-[#EFF2F6] justify-center">
           <div className="w-full h-[82px] bg-[#0C8F8F] rounded-b-[40px] mb-[80px]"></div>
           <div className="mt-[50px]"></div>
-          <h1 className="text-center text-[40px] font-bold text-[#0C8F8F]">LockInfak</h1>
+          <h1 className="text-center text-[40px] font-bold text-[#0C8F8F]">IKhlas App</h1>
           <div className="px-[24px] mt-[50px]">
             <div>
               <Label forInput="email" value="Email" text="text-black font-semibold" />
