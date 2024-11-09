@@ -106,30 +106,33 @@ import AdminPengguna from "./pages/Admin/AdminPengguna";
 import AdminEditPemasukan from "./pages/Admin/AdminEditPemasukan";
 import AdminEditPengeluaran from "./pages/Admin/AdminEditPengeluaran";
 import AdminEditPengguna from "./pages/Admin/AdminEditPengguna";
-import secret from "./pages/secret";
 import axios from "axios";
-import Secret from "./pages/secret";
 
 const App = () => {
   const [offlineStatus, setOfflineStatus] = useState(!navigator.onLine);
   const [timings, setTimings] = useState({});
+  const [token, setToken] = useState(null); // state untuk menggenerate token
+  //meminta izin notifikasi dari browser pengguna.
   async function requestPermission() {
     const permission = await Notification.requestPermission();
+    //jika izin diberikan
     if (permission === "granted") {
-      const token = await getToken(messaging, {
+      const generatedToken = await getToken(messaging, {
         vapidKey: "BEKVDbz-vGytWc5ugViwMoYR2EHv0to8Rr54cmDVGv0BkBy3qCp6THTPsXZJvob2ciZOBISh-7cM1oSORs31FX0",
       });
-      console.log("Token Gen", token);
+      console.log("Token Gen", generatedToken);
+      setToken(generatedToken); //generatedToken diterapkan untuk dipanggil
     } else if (permission === "denied") {
       alert("You denied for the notification");
     }
   }
 
   useEffect(() => {
-    // Req user for notification permission
+    // menjalankan permission hanya sekali ketika komponen baru pertama kali dibuat.
     requestPermission();
   }, []);
 
+  //untuk melihat offline dan online.
   function handleOfflineStatus() {
     setOfflineStatus(!navigator.onLine);
   }
@@ -174,7 +177,9 @@ const App = () => {
           setData(data);
         }
       });
+      //onvalue digunakan untuk memantau, ketika data di firebase berubah otomatis fungsi ini akan dipanggil.
       onValue(databaseKeuanganPemasukan, (snapshot) => {
+        //snapshot.val digunakan untuk mendapatkan data aktual dari firebase
         const data = snapshot.val();
         if (data !== null) {
           setDataKeuanganPemasukan(data);
@@ -257,7 +262,7 @@ const App = () => {
       const [hours, minutes] = prayerTime.split(":").map(Number);
       const now = new Date();
       const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-      const notifyTime = new Date(targetTime.getTime() - 157 * 60 * 1000); // 10 menit sebelum waktu sholat
+      const notifyTime = new Date(targetTime.getTime() - 10 * 60 * 1000); // 10 menit sebelum waktu sholat
       console.log("Waktu: ", time, notifyTime);
 
       const delay = notifyTime.getTime() - now.getTime();
@@ -270,10 +275,13 @@ const App = () => {
   };
 
   const sendNotification = async (body, title) => {
-    const token = "cyVDT8zhWB0FY6sks1EwfG:APA91bHHchdf33-3ZRhtoGW2D8CKVg9QMzBytKWnQWov5cuwJceURMqQJV6guaGRb2Y67WKqQTNFWlqpYKXTR7tnEv5voZ9Fl5gtgRtymoXAsyz5ukwE37nLFxvCn5JXCBiXyTyZnmQ6";
+    if (!token) {
+      console.error("Token is not available.");
+      return;
+    }
 
     try {
-      const url = `https://ikhlasapp.my.id/send-notification?token=${token}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+      const url = `http://localhost:3001/send-notification?token=${token}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
       console.log("Sending notification with URL: ", url);
 
       const response = await axios.get(url);
@@ -324,14 +332,6 @@ const App = () => {
           element={
             <PrivateRoute isAuthenticated={user} userRole={dataUser?.role}>
               <Maps />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/secret"
-          element={
-            <PrivateRoute isAuthenticated={user} userRole={dataUser?.role}>
-              <Secret />
             </PrivateRoute>
           }
         />
