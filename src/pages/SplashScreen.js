@@ -7,7 +7,7 @@ const SplashScreen = () => {
         <div className="flex justify-center">
           <img alt="logo" src="/images/logo.png" className="w-auto h-[150px]" />
         </div>
-        <h1 className="text-center text-[24px] font-semibold mt-[30px]">LockInfak</h1>
+        <h1 className="text-center text-[24px] font-semibold mt-[30px]">Ikhlas App</h1>
       </div>
     </div>
   );
